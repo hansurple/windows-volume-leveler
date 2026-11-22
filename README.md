@@ -1,2 +1,34 @@
-# windows-volume-leveler
-Windows volume leveling with a tray control and an Equalizer APO plug-in.
+# Windows 音量均衡器 v2
+
+小声的对白会被平滑抬高，偏响的片段会被压低。突然出现的提示音还有一道峰值限制。目标音量是处理后的平均电平参考，节目声音仍然会有自然起伏。
+
+## 从源码构建
+
+在 Windows x64 上准备 MinGW-w64 的 64 位 g++ 和 .NET Framework C# 编译器。在仓库目录打开 PowerShell，执行：
+
+```powershell
+.\Build.ps1 -Output .\dist
+```
+
+如果 MinGW-w64 未加入 PATH，使用 `-Compiler` 指定 64 位 g++ 的完整路径。构建产物放在 `dist`，其中包含托盘程序、插件和初始设置文件。
+
+安装 Python 后，可在同一目录运行自动化测试：
+
+```powershell
+python .\TestPlugin.py .\dist .\.verify
+```
+
+## 第一次使用
+
+1. 在 Windows 10/11 x64 安装 [Equalizer APO](https://sourceforge.net/projects/equalizerapo/)。在它的设备选择器里勾选常用的耳机和扬声器，按安装器提示重启。如果已经配好这些设备，可直接进行下一步。
+2. 将 `VolumeLevelerTray.exe`、`VolumeLeveler.dll` 和 `VolumeLeveler.settings` 一起保存在固定位置。双击 `VolumeLevelerTray.exe`。
+3. 点「配置…」→「复制配置」→「打开配置文件」。首次使用时，把复制的内容追加到主 `config.txt` 末尾。**从 v1 升级时，用它替换旧的 `# Peak Limiter` 五行配置块**，只保留一份均衡器插件配置。保留其他音效设置，并以 UTF-8 保存。需要权限时，用管理员身份打开文本编辑器再保存。
+4. 回到面板勾选「启用自动均衡」，先用默认的 **−24 dBFS**。交替播放几秒偏小的对白和偏响的视频，切换开关确认差异。换到另一个常用输出设备后，也做一次这个对比。
+
+## 日常使用
+
+- 「目标音量」向右更响，向左更轻。默认值为 −24 dBFS，范围为 −32 至 −16 dBFS。它以短时平均电平为参考。实际听到多响仍取决于 Windows 音量和设备音量。
+- 工具需要一点时间判断声音大小。连续的轻声会逐渐抬高，明显变响时会较快压低。很轻的背景音不会持续被放大。数字采样峰值上限为 −3 dBFS，前瞻缓冲约 5 毫秒。
+- 托盘保存开关和目标音量。关掉面板后，已启用的均衡继续在后台运行。要暂停效果，取消勾选「启用自动均衡」。
+- 新换的耳机或扬声器需要在 Equalizer APO 中勾选。使用 ASIO、独占输出或其他绕开 Windows 混音链路的应用可能绕过处理。移动本目录后，重新复制配置并替换旧路径。
+- 如果开关前后听不出差别，先确认正在播放的设备已勾选、音频增强已启用、插件路径正确，以及 v2 配置已保存到主文件末尾。

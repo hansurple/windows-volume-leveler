@@ -1,0 +1,4 @@
+/dist/
+/.verify/
+__pycache__/
+*.settings
